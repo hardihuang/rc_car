@@ -13,7 +13,7 @@
 /*-----( Declare Constants and Pin Numbers )-----*/
 #define JOYSTICK_X  A0
 #define JOYSTICK_Y  A1
-#define JOYSTICK_SW  A2
+#define JOYSTICK_SW  2
 
 /*-----( Declare objects )-----*/
 // (Create an instance of a radio, specifying the CE and CS pins. )
