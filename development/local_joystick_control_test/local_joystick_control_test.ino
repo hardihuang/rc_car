@@ -2,10 +2,16 @@
  int leftBackward = 10;
  int rightForward = 5;
  int rightBackward = 6;
- int joyPin1 = 0;
+ int joyPinY = 0;
+ int joyPinX = 1;
+ 
 
- int value1 = 0; 
- int pwm = 0;
+ int valueX = 0; 
+ int valueY = 0;
+ int leftSpeed = 0;
+ int rightSpeed = 0;
+ int moveDir = 0; // 0 = forward , 1 = backward
+
 
  void setup() {
   pinMode(leftForward, OUTPUT);
@@ -16,35 +22,57 @@
  }
 
  void loop() {
-  value1 = analogRead(joyPin1);  
-  pwm = map(value1, 0, 1023, 0, 255); 
-  //Serial.println(pwm);
-  if(pwm > 136){
-    pwm = map(pwm-128, 0, 128, 100, 255);
-    forward();
-  }else if(pwm < 120){
-    pwm = map(pwm, 0, 128, 255, 100);
-    backward();
-  }else{
-    stop();
+  valueX = analogRead(joyPinX);
+  valueY = analogRead(joyPinY);
+  
+  if(valueY<512){ //move forward
+    moveDir = 0;
+    leftSpeed = 512 - valueY;
+    rightSpeed = leftSpeed;
+    if(valueX > 512){ //turn left
+      leftSpeed = leftSpeed - (valueX - 512);
+    }else if(valueX < 512){   //turn right
+      rightSpeed = rightSpeed -(512 - valueX);
+    }
+  }else if(valueY > 512){ //move backward
+    moveDir = 1;
+    leftSpeed = valueY - 512;
+    rightSpeed = leftSpeed;
+    if(valueX > 512){ //turn left
+      leftSpeed = leftSpeed - (valueX - 512);
+    }else if(valueX < 512){ //turn right
+      rightSpeed = rightSpeed -(512 - valueX);
+    }
   }
+  
+  
+  leftSpeed = map(leftSpeed, 0, 512, 0, 255);
+  rightSpeed = map(rightSpeed, 0, 512, 0, 255);
+  
+  if(moveDir == 0){
+    Serial.print(" Forward ");
+    analogWrite(leftForward,leftSpeed);
+    analogWrite(leftBackward,0);
+    analogWrite(rightForward,rightSpeed);
+    analogWrite(rightBackward,0);
+  }else if(moveDir == 1){
+    Serial.print(" Backward ");
+    analogWrite(leftForward,0);
+    analogWrite(leftBackward,leftSpeed);
+    analogWrite(rightForward,0);
+    analogWrite(rightBackward,rightSpeed);
+  }
+    Serial.print(" Left speed: ");
+    Serial.print(leftSpeed);
+    Serial.print(" Right speed: ");
+    Serial.println(rightSpeed);
+    //delay(1000);
 }
 
-void forward(){
-  analogWrite(leftBackward,0);
-  analogWrite(leftForward,pwm);
-  analogWrite(rightBackward,0);
-  analogWrite(rightForward,pwm);
-}
-void backward(){
-  analogWrite(leftForward,0);
-  analogWrite(leftBackward,pwm);
-  analogWrite(rightForward,0);
-  analogWrite(rightBackward,pwm);
-}
-void stop(){
-  analogWrite(leftForward,0);
-  analogWrite(leftBackward,0);
-  analogWrite(rightForward,0);
-  analogWrite(rightBackward,0);
-}
+
+
+
+
+
+
+
