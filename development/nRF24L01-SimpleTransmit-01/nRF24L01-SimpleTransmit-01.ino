@@ -49,13 +49,12 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
   myData.switchOn = !digitalRead(JOYSTICK_SW);
 
   myData._micros = micros();
-  Serial.println(myData.Xposition);
-  Serial.print(F("Now sending  -  "));
-  
-  
-  if(!myRadio.write(&myData, sizeof(myData))){
-    Serial.println(F("Transmit failed"));
-  }
+  Serial.print("X: ");
+  Serial.print(myData.Xposition);
+  Serial.print("  Y: ");
+  Serial.println(myData.Yposition);
+
+  myRadio.write(&myData, sizeof(myData));
   delay(100);
 }//--(end main loop )---
 
