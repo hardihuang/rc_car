@@ -16,7 +16,15 @@
  int rightForward = 5;
  int rightBackward = 6;
  int joyPin1 = 0;
- int pwm = 0;
+ int moveDir = 0;	//0 = stop, 1 = forward, 2 = backward, 3 =spinning right, 4, spinning left
+
+ int Xposition;
+ int Yposition;
+ int btnA;
+ int btnB;
+ int motorSpeedA = 0;
+ int motorSpeedB = 0;
+ 
 /*-----( Declare objects )-----*/
 // (Create an instance of a radio, specifying the CE and CS pins. )
 RF24 myRadio (7, 8); // "myRadio" is the identifier you will use in following methods
@@ -28,7 +36,8 @@ struct dataStruct {
   unsigned long _micros;  // to save response times
   int Xposition;          // The Joystick position values
   int Yposition;
-  bool switchOn;          // The Joystick push-down switch
+  bool btnA;          // The Joystick push-down switch
+  bool btnB;
 } myData; 
 
 
@@ -59,52 +68,102 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
     {
       myRadio.read( &myData, sizeof(myData) ); // Get the data payload (You must have defined that already!)
     }
-    pwm = map(myData.Xposition, 0, 1023, 0, 255);
-  
-  if(pwm > 136){
-    pwm = map(pwm - 128, 0, 128, 100, 255);
-    forward();
-  }else if(pwm < 120){
-    pwm = map(pwm, 0, 128, 255, 100);
-    backward();
+	  Xposition = myData.Xposition;
+    Yposition = myData.Yposition;
+    btnA = myData.btnA;
+    btnB = myData.btnB;
+    
+    if(Yposition < 470){	// backward
+		motorSpeedA = map(Yposition, 470, 0, 0, 255);
+		motorSpeedB = motorSpeedA;
+		moveDir = 2;
+	}else if(Yposition > 550 ){	//forward
+		motorSpeedA = map(Yposition, 550, 1023, 0, 255);
+		motorSpeedB = motorSpeedA;
+		moveDir = 1;
+	}else if(btnA == 1){
+	  moveDir = 4;
+	}else if(btnB == 1){
+	  moveDir = 3;
+	}else{	//stop
+		motorSpeedA = 0;
+		motorSpeedB = 0;
+		moveDir = 0;
+	}
+	
+	if(Xposition < 470){	//move to the left
+		int xMapped = map(Xposition, 470, 0, 0, 255);
+		motorSpeedA = motorSpeedA - xMapped;
+		motorSpeedB = motorSpeedB + xMapped;
+		
+		if(motorSpeedA < 0){
+			motorSpeedA = 0;
+		}
+		if(motorSpeedB > 255){
+			motorSpeedB = 255;
+		}
+	}if(Xposition > 550){	//move to the right
+		int xMapped = map(Xposition, 550, 1023, 0, 255);
+		motorSpeedA = motorSpeedA + xMapped;
+		motorSpeedB = motorSpeedB - xMapped;
+		
+		if(motorSpeedA > 255){
+			motorSpeedA = 255;
+		}
+		if(motorSpeedB < 0){
+			motorSpeedB = 0;
+		}
+	}
+	
+	if(motorSpeedA < 70){
+		motorSpeedA = 0;
+	}
+	if(motorSpeedB < 70){
+		motorSpeedB = 0;
+	}
+	
+	if(moveDir == 1){
+		Serial.print(" moving Forward ");
+		
+		analogWrite(leftForward, motorSpeedA);
+		analogWrite(leftBackward, 0);
+		analogWrite(rightForward, motorSpeedB);
+		analogWrite(rightBackward, 0);
+	}else if(moveDir == 2){
+		Serial.print(" moving Backward ");
+		
+		analogWrite(leftForward,0);
+		analogWrite(leftBackward,motorSpeedA);
+		analogWrite(rightForward,0);
+		analogWrite(rightBackward,motorSpeedB);
+	}else if(moveDir == 3){
+  Serial.print(" spinning right ");
+	  digitalWrite(leftForward, 1);
+    analogWrite(leftBackward, 0);
+    analogWrite(rightForward, 0);
+    digitalWrite(leftBackward, 1);
+	}else if(moveDir == 4){
+  Serial.print(" spinning left ");
+   analogWrite(leftForward, 0);
+    digitalWrite(leftBackward, 1);
+    digitalWrite(rightForward, 1);
+    analogWrite(leftBackward, 0);
   }else{
-    stop();
-  }
+    Serial.print(" stop ");
+	  analogWrite(leftForward,0);
+    analogWrite(leftBackward,0);
+    analogWrite(rightForward,0);
+    analogWrite(rightBackward,0);
+	}
+	Serial.print(" left : ");
+	Serial.print(motorSpeedA);
+	Serial.print(" right : ");
+	Serial.println(motorSpeedB);
   
-    // DO something with the data, like print it
-    //Serial.print(F("X = "));
-    //Serial.println(myData.Xposition);
-    //Serial.print(F("Y = "));
-    //Serial.println(myData.Yposition);
-    if(myData.switchOn == 1){
-      //Serial.println(F(" Switch ON"));
-    }else{
-    //  Serial.println(F(" Switch OFF"));
-    }
   } //END Radio available
 
 }//--(end main loop )---
 
 /*-----( Declare User-written Functions )-----*/
-void forward(){
-  Serial.println("forward");
-  analogWrite(leftBackward,0);
-  analogWrite(leftForward,pwm);
-  analogWrite(rightBackward,0);
-  analogWrite(rightForward,pwm);
-}
-void backward(){
-  Serial.println("backward");
-  analogWrite(leftForward,0);
-  analogWrite(leftBackward,pwm);
-  analogWrite(rightForward,0);
-  analogWrite(rightBackward,pwm);
-}
-void stop(){
-  Serial.println("stop");
-  analogWrite(leftForward,0);
-  analogWrite(leftBackward,0);
-  analogWrite(rightForward,0);
-  analogWrite(rightBackward,0);
-}
+
 //*********( THE END )***********
