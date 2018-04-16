@@ -138,16 +138,16 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
 		analogWrite(rightBackward,motorSpeedB);
 	}else if(moveDir == 3){
   Serial.print(" spinning right ");
-	  digitalWrite(leftForward, 1);
+	  analogWrite(leftForward, 255);
     analogWrite(leftBackward, 0);
     analogWrite(rightForward, 0);
-    digitalWrite(leftBackward, 1);
+    analogWrite(rightBackward, 255);
 	}else if(moveDir == 4){
   Serial.print(" spinning left ");
-   analogWrite(leftForward, 0);
-    digitalWrite(leftBackward, 1);
-    digitalWrite(rightForward, 1);
-    analogWrite(leftBackward, 0);
+    analogWrite(leftForward, 0);
+    analogWrite(leftBackward, 255);
+    analogWrite(rightForward, 255);
+    analogWrite(rightBackward, 0);
   }else{
     Serial.print(" stop ");
 	  analogWrite(leftForward,0);
