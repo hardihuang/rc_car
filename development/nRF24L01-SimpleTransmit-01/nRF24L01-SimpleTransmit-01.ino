@@ -13,7 +13,9 @@
 /*-----( Declare Constants and Pin Numbers )-----*/
 #define JOYSTICK_X  A0
 #define JOYSTICK_Y  A1
-#define JOYSTICK_SW  2
+
+int btnA = 2;
+int btnB = 3;
 
 /*-----( Declare objects )-----*/
 // (Create an instance of a radio, specifying the CE and CS pins. )
@@ -25,14 +27,16 @@ struct dataStruct {
   unsigned long _micros;
   int Xposition;
   int Yposition;
-  bool switchOn;
+  bool btnA;
+  bool btnB;
 } myData;
 
 
 void setup()
 {
  Serial.begin(115200);
-  pinMode(JOYSTICK_SW, INPUT_PULLUP);
+  pinMode(btnA, INPUT_PULLUP);
+  pinMode(btnB, INPUT_PULLUP);
   myRadio.begin();
   myRadio.setChannel(108);
   myRadio.setPALevel(RF24_PA_MIN);
@@ -46,13 +50,18 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
   myRadio.stopListening();
   myData.Xposition = analogRead(JOYSTICK_X);
   myData.Yposition = analogRead(JOYSTICK_Y);
-  myData.switchOn = !digitalRead(JOYSTICK_SW);
+  myData.btnA = !digitalRead(btnA);
+  myData.btnB = !digitalRead(btnB);
 
   myData._micros = micros();
   Serial.print("X: ");
   Serial.print(myData.Xposition);
   Serial.print("  Y: ");
   Serial.println(myData.Yposition);
+  Serial.print(" btnA: ");
+  Serial.println(myData.btnA);
+  Serial.print(" btnB: ");
+  Serial.println(myData.btnB);
 
   myRadio.write(&myData, sizeof(myData));
   delay(100);
