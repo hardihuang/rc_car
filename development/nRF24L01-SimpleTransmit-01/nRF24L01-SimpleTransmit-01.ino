@@ -39,7 +39,9 @@ void setup()
   pinMode(btnB, INPUT_PULLUP);
   myRadio.begin();
   myRadio.setChannel(108);
-  myRadio.setPALevel(RF24_PA_MIN);
+  myRadio.setDataRate(RF24_250KBPS); // Fast enough.. Better range
+  //myRadio.setPALevel(RF24_PA_MIN);
+  myRadio.setPALevel(RF24_PA_MAX);
   myRadio.openWritingPipe( addresses[0]); 
   delay(1000);
 }//--(end setup )---

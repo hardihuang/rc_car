@@ -1,12 +1,23 @@
+/* 
+   1 - GND
+   2 - VCC 3.3V !!! NOT 5V
+   3 - CE to Arduino pin 7
+   4 - CSN to Arduino pin 8
+   5 - SCK to Arduino pin 13
+   6 - MOSI to Arduino pin 11
+   7 - MISO to Arduino pin 12
+   8 - UNUSED
+*/
+
 #include <SPI.h>
 #include "RF24.h" 
 
-#define enA 9
-#define in1 3
-#define in2 4
-#define enB 10
-#define in3 5
-#define in4 6
+#define enA 10
+#define in1 6
+#define in2 5
+#define enB 9
+#define in3 4
+#define in4 3
 
 int motorSpeedA = 0;
 int motorSpeedB = 0;
@@ -40,14 +51,16 @@ void setup() {
   delay(1000);
   myRadio.begin();  // Start up the physical nRF24L01 Radio
   myRadio.setChannel(108);  // Above most Wifi Channels
-  myRadio.setPALevel(RF24_PA_MIN);
+  myRadio.setDataRate(RF24_250KBPS); // Fast enough.. Better range
+  //myRadio.setPALevel(RF24_PA_MIN);
+  myRadio.setPALevel(RF24_PA_MAX);
   myRadio.openReadingPipe(1, addresses[0]); // Use the first entry in array 'addresses' (Only 1 right now)
   myRadio.startListening();
   
 }
 
 void loop() {
-    
+      
   if(myRadio.available()){
     while (myRadio.available())  // While there is data ready
     {
@@ -58,7 +71,16 @@ void loop() {
     yAxis = myData.Yposition;
     btnA = myData.btnA;
     btnB = myData.btnB;
- 
+    
+    Serial.print(" X: ");
+    Serial.print(xAxis);
+    Serial.print(" Y: ");
+    Serial.print(yAxis);
+    Serial.print(" btnA: ");
+    Serial.print(btnA);
+    Serial.print(" btnB: ");
+    Serial.println(btnB);
+    
     if(btnA == 1){  //spinning to the left
       motorSpeedA = 255;
       motorSpeedB = 255;
@@ -76,7 +98,7 @@ void loop() {
     }else{
       // Y-axis used for forward and backward control
       if (yAxis < 470) {
-        Serial.print(" backward ");
+        //Serial.print(" backward ");
         // Set Motor A backward
         digitalWrite(in1, HIGH);
         digitalWrite(in2, LOW);
@@ -87,7 +109,7 @@ void loop() {
         motorSpeedA = map(yAxis, 470, 0, 0, 255);
         motorSpeedB = map(yAxis, 470, 0, 0, 255);
       }else if (yAxis > 550) {
-        Serial.print(" forward ");
+        //Serial.print(" forward ");
         // Set Motor A forward
         digitalWrite(in1, LOW);
         digitalWrite(in2, HIGH);
@@ -99,7 +121,7 @@ void loop() {
         motorSpeedB = map(yAxis, 550, 1023, 0, 255);
       } // If joystick stays in middle the motors are not moving
       else {
-        Serial.print(" stop ");
+        //Serial.print(" stop ");
         motorSpeedA = 0;
         motorSpeedB = 0;
       }
@@ -134,10 +156,10 @@ void loop() {
         }
       }
       // Prevent buzzing at low speeds (Adjust according to your motors. My motors couldn't start moving if PWM value was below value of 70)
-      if (motorSpeedA < 70) {
+      if (motorSpeedA < 20) {
         motorSpeedA = 0;
       }
-      if (motorSpeedB < 70) {
+      if (motorSpeedB < 20) {
         motorSpeedB = 0;
       }
     }
