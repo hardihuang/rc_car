@@ -14,8 +14,11 @@
 #define JOYSTICK_X  A0
 #define JOYSTICK_Y  A1
 
-int btnA = 2;
-int btnB = 3;
+int btnA = 2; // right spinning
+int btnB = 3; //left spinning
+int btnC = 4; //joystick btn
+int btnD = 5; //undefined
+int btnE = 6; //undefined
 
 /*-----( Declare objects )-----*/
 // (Create an instance of a radio, specifying the CE and CS pins. )
@@ -29,6 +32,9 @@ struct dataStruct {
   int Yposition;
   bool btnA;
   bool btnB;
+  bool btnC;
+  bool btnD;
+  bool btnE;
 } myData;
 
 
@@ -37,6 +43,9 @@ void setup()
  Serial.begin(115200);
   pinMode(btnA, INPUT_PULLUP);
   pinMode(btnB, INPUT_PULLUP);
+  pinMode(btnC, INPUT_PULLUP);
+  pinMode(btnD, INPUT_PULLUP);
+  pinMode(btnE, INPUT_PULLUP);
   myRadio.begin();
   myRadio.setChannel(108);
   myRadio.setDataRate(RF24_250KBPS); // Fast enough.. Better range
@@ -54,8 +63,11 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
   myData.Yposition = analogRead(JOYSTICK_Y);
   myData.btnA = !digitalRead(btnA);
   myData.btnB = !digitalRead(btnB);
-
+  myData.btnC = !digitalRead(btnC);
+  myData.btnD = !digitalRead(btnD);
+  myData.btnE = !digitalRead(btnE);
   myData._micros = micros();
+  /*
   Serial.print("X: ");
   Serial.print(myData.Xposition);
   Serial.print("  Y: ");
@@ -64,7 +76,7 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
   Serial.println(myData.btnA);
   Serial.print(" btnB: ");
   Serial.println(myData.btnB);
-
+  */
   myRadio.write(&myData, sizeof(myData));
   delay(100);
 }//--(end main loop )---
