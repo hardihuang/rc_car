@@ -25,6 +25,10 @@ int xAxis = 0;
 int yAxis = 0;
 bool btnA = 0;
 bool btnB = 0;
+bool btnC = 0;
+bool btnD = 0;
+bool btnE = 0;
+
 
 RF24 myRadio (7, 8); 
 byte addresses[][6] = {"1Node"};
@@ -34,8 +38,11 @@ struct dataStruct {
   unsigned long _micros;  // to save response times
   int Xposition;          // The Joystick position values
   int Yposition;
-  bool btnA;          // The Joystick push-down switch
+  bool btnA;
   bool btnB;
+  bool btnC;
+  bool btnD;
+  bool btnE;
 } myData; 
 
 
@@ -71,6 +78,9 @@ void loop() {
     yAxis = myData.Yposition;
     btnA = myData.btnA;
     btnB = myData.btnB;
+    btnC = myData.btnC;
+    btnD = myData.btnD;
+    btnE = myData.btnE;
     
     Serial.print(" X: ");
     Serial.print(xAxis);
@@ -79,7 +89,13 @@ void loop() {
     Serial.print(" btnA: ");
     Serial.print(btnA);
     Serial.print(" btnB: ");
-    Serial.println(btnB);
+    Serial.print(btnB);
+    Serial.print(" btnC: ");
+    Serial.print(btnC);
+    Serial.print(" btnD: ");
+    Serial.print(btnD);
+    Serial.print(" btnE: ");
+    Serial.println(btnE);
     
     if(btnA == 1){  //spinning to the left
       motorSpeedA = 255;
