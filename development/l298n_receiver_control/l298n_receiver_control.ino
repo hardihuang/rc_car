@@ -12,6 +12,7 @@
 #include <SPI.h>
 #include "RF24.h" 
 
+//motor dirver pins
 #define enA 10
 #define in1 6
 #define in2 5
@@ -19,15 +20,22 @@
 #define in3 4
 #define in4 3
 
+#define light A0;
+
 int motorSpeedA = 0;
 int motorSpeedB = 0;
 int xAxis = 0;
 int yAxis = 0;
-bool btnA = 0;
-bool btnB = 0;
-bool btnC = 0;
-bool btnD = 0;
-bool btnE = 0;
+bool btnA = 0;  //left bumper	left spinning
+bool btnB = 0;  //right bumper	right spinning
+bool btnC = 0;  //joystick button
+bool btnD = 0;	//half speed
+bool btnE = 0;	//turn on/off light
+bool btnF = 0;
+bool btnG = 0;
+
+bool lowSpeed = 0;
+bool lightOn = 0;
 
 
 RF24 myRadio (7, 8); 
@@ -43,6 +51,8 @@ struct dataStruct {
   bool btnC;
   bool btnD;
   bool btnE;
+  bool btnF;
+  bool btnG;
 } myData; 
 
 
@@ -53,6 +63,7 @@ void setup() {
   pinMode(in2, OUTPUT);
   pinMode(in3, OUTPUT);
   pinMode(in4, OUTPUT);
+  pinMode(light, OUTPUT);
   
   Serial.begin(115200);
   delay(1000);
@@ -82,6 +93,7 @@ void loop() {
     btnD = myData.btnD;
     btnE = myData.btnE;
     
+	/*
     Serial.print(" X: ");
     Serial.print(xAxis);
     Serial.print(" Y: ");
@@ -96,6 +108,23 @@ void loop() {
     Serial.print(btnD);
     Serial.print(" btnE: ");
     Serial.println(btnE);
+    */
+	
+	//full speed or half speed
+    if(btnD == 1){
+      lowSpeed = 1;  
+    }else{
+      lowSpeed = 0;
+    }
+	
+	//turn on/off light
+	if(btnE == 1 and lightOn == 0){
+		digitalWrite(light, 1);
+		lightOn = 1;
+	}else if(btnE == 1 and lightOn == 1){
+		digitalWrite(light, 0);
+		lightOn = 0;
+	}
     
     if(btnA == 1){  //spinning to the left
       motorSpeedA = 255;
@@ -179,7 +208,10 @@ void loop() {
         motorSpeedB = 0;
       }
     }
-    
+    if(lowSpeed == 1){
+      motorSpeedA = motorSpeedA/2;
+      motorSpeedB = motorSpeedB/2;
+    }
     analogWrite(enA, motorSpeedA); // Send PWM signal to motor A
     analogWrite(enB, motorSpeedB); // Send PWM signal to motor B
   }
